@@ -11,7 +11,7 @@ screen_width = 1400
 screen_height = 900
 level_size = [1500, 1500]
 pygame.init()
-screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((screen_width, screen_height))
 black = (0, 0, 0)
 white = (255, 255, 255)
 hero_size = {'x': 56, 'y': 56}
@@ -20,17 +20,16 @@ mouse_pos = {'x': screen_width / 2, 'y': screen_height / 2}
 mouse_impact = 0.15
 hero_sprite = ["player_stand.png", "player_walk1.png", "player_walk2.png", "player_walk3.png", "player_walk4.png"]
 BG = pygame.transform.scale(pygame.image.load(os.path.join("assets", "background.png")), (screen_width, screen_height))
-p_menu = pygame.transform.scale(pygame.image.load(os.path.join("assets", "pause_menu.png")), (screen_width, screen_height))
 STAN_BUTTON = pygame.image.load(os.path.join("sprites", "stan.png"))
+p_menu = pygame.transform.scale(pygame.image.load(os.path.join("assets", "pause_menu.png")), (screen_width, screen_height))
+STUDENTS_BUTTON = pygame.transform.scale(pygame.image.load(os.path.join("assets", "students.png")), (468,69))
 floor_sprite_size = 100
 wall_sprite_size = 20
-FLOOR = [pygame.transform.scale(pygame.image.load(os.path.join("assets", "floor_1.png")),
-                                (floor_sprite_size, floor_sprite_size)),
-         pygame.transform.scale(pygame.image.load(os.path.join("assets", "floor_2.png")),
-                                (floor_sprite_size, floor_sprite_size))]
-WALL = [pygame.transform.scale(pygame.image.load(os.path.join("assets", "wall_1.png")),
-                               (wall_sprite_size, wall_sprite_size))]
-
+students_count = 0
+FLOOR = [pygame.transform.scale(pygame.image.load(os.path.join("assets", "floor_1.png")), (floor_sprite_size,floor_sprite_size)),
+         pygame.transform.scale(pygame.image.load(os.path.join("assets", "floor_2.png")), (floor_sprite_size,floor_sprite_size))]
+WALL = [pygame.transform.scale(pygame.image.load(os.path.join("assets", "wall_1.png")), (wall_sprite_size,wall_sprite_size))]
+STAIRS = pygame.transform.scale(pygame.image.load(os.path.join("assets", "stairs.jpg")), (100, 100))
 menu_button_1 = pygame.image.load(os.path.join("assets", "1lvl.png"))
 menu_button_2 = pygame.image.load(os.path.join("assets", "1lvl_dark.png"))
 menu_button_3 = pygame.image.load(os.path.join("assets", "esc.png"))
@@ -41,12 +40,14 @@ esc_menu_button_2 = pygame.image.load(os.path.join("assets", "back_to_menu.png")
 
 menu_button_sound = pygame.mixer.Sound(os.path.join("sounds", "button_1.wav"))
 
+
 angle = math.pi
 sin = 1
 cos = 0
 ability_cooldown = 10
 stan_cooldown = 0
 stan_range = 60
+eat_range = 40
 
 
 class all_map():
@@ -125,6 +126,30 @@ class all_map():
             else:
                 pass
 
+class Door():
+    def __init__(self, x, y, width, height, angle):
+        self.angle = angle
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.width_0 = 100
+        self.height_0 = 100
+        self.opened = False
+        self.img = pygame.transform.rotate(STAIRS, self.angle)
+        
+    def draw(self):
+        screen.blit(self.img, (self.x - mouse_pos['x'] 
+                                   * mouse_impact, self.y - mouse_pos['y'] * mouse_impact))
+        if self.opened:
+            return
+        else:
+            pygame.draw.rect(screen, (255, 0, 0), (self.x - mouse_pos['x'] * mouse_impact, self.y - mouse_pos['y'] * mouse_impact, self.width, self.height))
+
+    def door_open(self):
+        self.opened = True
+        self.width = 0
+        self.height = 0
 
 class Wall():
     def __init__(self, x, y, width, height, number):
@@ -145,10 +170,10 @@ class Wall():
         # функция рисования стены на карте
         for i in range(self.width // wall_sprite_size):
             for a in range(self.height // wall_sprite_size):
-                screen.blit(self.img, (self.x + i * wall_sprite_size - mouse_pos['x']
-                                       * mouse_impact, self.y + a * wall_sprite_size - mouse_pos['y'] * mouse_impact))
-
-
+                screen.blit(self.img, (self.x + i * wall_sprite_size - mouse_pos['x'] 
+                                   * mouse_impact, self.y + a * wall_sprite_size - mouse_pos['y'] * mouse_impact))
+        
+        
 class Floor():
     def __init__(self, x, y, size, number):
         self.x = x
@@ -158,12 +183,13 @@ class Floor():
         self.size = size
         self.sprite = black
         self.img = FLOOR[number]
-
+        
+        
     def draw(self):
         for i in range(self.size[1] // floor_sprite_size):
             for a in range(self.size[0] // floor_sprite_size):
-                screen.blit(self.img, (self.x + a * floor_sprite_size - mouse_pos['x']
-                                       * mouse_impact, self.y + i * floor_sprite_size - mouse_pos['y'] * mouse_impact))
+                screen.blit(self.img, (self.x + a * floor_sprite_size - mouse_pos['x'] 
+                                   * mouse_impact,self.y + i * floor_sprite_size - mouse_pos['y'] * mouse_impact))
 
 
 class Hero():
@@ -208,13 +234,31 @@ class Hero():
         else:
             self.img_0 = pygame.image.load(os.path.join("sprites", "PNG", "Player", "Poses", hero_sprite[0]))
 
-
 class Student():
     def __init__(self, x, y, angle):
+        self.width = 0
+        self.height = 0
         self.x = x
         self.y = y
         self.angle = angle
-
+        self.img_0 = pygame.image.load(os.path.join("sprites", "PNG", "Player", "Poses", hero_sprite[0]))
+        self.img = pygame.transform.rotate(self.img_0, self.angle)
+        self.killed = False
+        
+    def draw(self):
+        if not self.killed:
+            screen.blit(self.img, (self.x - mouse_pos['x'] * mouse_impact - hero.length / 2,
+                               self.y - mouse_pos['y'] * mouse_impact - hero.height / 2))
+        
+    def eat(self):
+        global students_count
+        if not self.killed:
+            self.killed = True
+            students_count += 1
+            print(students_count)
+            if students_count == len(students):
+                for door in doors:
+                    door.door_open()
 
 class Enemy():
     def __init__(self, x, y, angle, number, rotation):
@@ -238,8 +282,7 @@ class Enemy():
         self.rotate_index = 0
 
     def draw(self):
-        screen.blit(self.img, (self.x - hero.length / 2 - mouse_pos['x'] * mouse_impact,
-                               self.y - hero.height / 2 - mouse_pos['y'] * mouse_impact))
+        screen.blit(self.img, (self.x - hero.length / 2 - mouse_pos['x'] * mouse_impact, self.y - hero.height / 2 - mouse_pos['y'] * mouse_impact))
 
     def vision(self, a):
         if not self.trace and self.stan_time == 0:
@@ -256,10 +299,10 @@ class Enemy():
             self.trace.delete(self.index)
         if self.stan_time >= 0:
             self.trace = 0
-
+            
     def rotate(self):
         if self.rotate_time <= 0 and self.rotate_len >= 2:
-            if self.angle // 1 != self.rotation[self.rotate_index]:
+            if self.angle // 1 != self.rotation[self.rotate_index] :
                 self.angle += (self.rotation[self.rotate_index] - self.rotation[self.rotate_index - 1]) / FPS
                 self.img = pygame.transform.rotate(self.img_0, self.angle)
             else:
@@ -340,11 +383,20 @@ def output(text, x, y, font_color, font_type='game_font.ttf', font_size=40):
     message = font_type.render(text, True, font_color)
     screen.blit(message, (x, y))
 
-
 def stan(stan_time):
+    global stan_cooldown
     for enemy in enemies:
         if hero.x < enemy.x + stan_range and hero.x > enemy.x - stan_range and hero.y < enemy.y + stan_range and hero.y > enemy.y - stan_range:
             enemy.stan(stan_time)
+            stan_cooldown = ability_cooldown * FPS
+            
+def eat():
+    for student in students:
+        if hero.x < student.x + eat_range and hero.x > student.x - eat_range and hero.y < student.y + eat_range and hero.y > student.y - eat_range:
+            student.eat()
+
+def win():
+    print("win")
 
 
 def show_menu():
@@ -361,7 +413,6 @@ def show_menu():
 
         screen.blit(menu_background, (0, 0))
         level_1_button.draw(level_1)
-        quit_button.draw(quit)
 
         pygame.display.update()
 
@@ -391,7 +442,7 @@ def pause():
 
 
 def level_1():
-    global sin, cos, angle, stan_cooldown, axis
+    global sin, cos, angle, stan_cooldown, axis, students_count
 
     clock = pygame.time.Clock()
     while 1:
@@ -414,7 +465,6 @@ def level_1():
             angle = math.pi / 2
             sin = 0
             cos = 1
-        #print(angle)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -432,7 +482,7 @@ def level_1():
                     if event.key == pygame.K_f:
                         if stan_cooldown == 0:
                             stan(5)
-                            stan_cooldown = ability_cooldown * FPS
+                        eat()
                     if event.key == pygame.K_ESCAPE:
                         pause()
 
@@ -466,24 +516,39 @@ def level_1():
             if enemy.stan_time > 0:
                 enemy.stan_time -= 1
             if stan_cooldown == 0 and hero.x < enemy.x + stan_range and hero.x > enemy.x - stan_range and hero.y < enemy.y + stan_range and hero.y > enemy.y - stan_range:
-                pygame.draw.rect(screen, (255, 255, 255), (hero.x - 70, hero.y * 2 - 85, 140, 50))
                 screen.blit(STAN_BUTTON, (hero.x - 80, hero.y * 2 - 95))
                 font = pygame.font.Font(None, 30)
                 name_text = font.render('ОГЛУШИТЬ F', 1, (0, 0, 0))
                 screen.blit(name_text, (hero.x - 70, hero.y * 2 - 69))
+                
+        for student in students:
+            if not student.killed and hero.x < student.x + eat_range and hero.x > student.x - eat_range and hero.y < student.y + eat_range and hero.y > student.y - eat_range:
+                screen.blit(STAN_BUTTON, (hero.x - 80, hero.y * 2 - 95))
+                font = pygame.font.Font(None, 30)
+                name_text = font.render('СЪЕСТЬ F', 1, (0, 0, 0))
+                screen.blit(name_text, (hero.x - 55, hero.y * 2 - 69))
+        
+        for door in doors:
+            if hero.x < door.x - 5 + door.width_0 and hero.x > door.x + 5 and hero.y < door.y - 5 + door.height_0 and hero.y > door.y + 5:
+                win()
+        
+        screen.blit(STUDENTS_BUTTON, (10, 10))
+        font = pygame.font.Font('game_font.ttf', 25)
+        name_text = font.render('СТУДЕНТОВ СЪЕДЕНО: ' + str(students_count) + " ИЗ " + str(len(students)), 1, (0, 0, 0))
+        screen.blit(name_text, (35, 35))
         pygame.display.update()
         hero.img_0 = pygame.image.load(os.path.join("sprites", "PNG", "Player", "Poses", hero_sprite[0]))
 
-
+doors = [Door(1800, 100, 10, 100, -90)]
+students = [Student(450, 250, 30), Student(420, 150, 90)]
 floor = [Floor(400, 100, [1500, 900], 1), Floor(400, 200, [600, 500], 0)]
-enemies = [
-    Enemy(1850, 430, 0, 0, [-90, 0])]  # Enemy(400, 230, 250, 0), Enemy(520, 280, 30, [], 1), Enemy(270, 320, 180, 2)
-walls = [Wall(400, 200, 600, 40, 0), Wall(360, 100, 40, 940, 0), Wall(400, 660, 200, 40, 0), Wall(960, 200, 40, 480, 0),
-         Wall(700, 660, 1100, 40, 0), Wall(400, 60, 900, 40, 0),
-         Wall(400, 1000, 1500, 40, 0), Wall(1900, 100, 40, 940, 0),
-         Wall(1000, 500, 800, 200, 0), Wall(1100, 200, 800, 200, 0)]
+enemies = [Enemy(1850, 430, 0, 0, [-90, 0])]  #Enemy(400, 230, 250, 0), Enemy(520, 280, 30, [], 1), Enemy(270, 320, 180, 2)
+walls = [Wall(400, 200, 600, 40, 0), Wall(360, 60, 40, 980, 0), Wall(400, 660, 200, 40, 0), Wall(960, 200, 40, 480, 0),
+                   Wall(700, 660, 1100, 40, 0), Wall(400, 60, 1540, 40, 0),
+                    Wall(400, 1000, 1500, 40, 0), Wall(1900, 60, 40, 980, 0),
+                    Wall(1000, 500, 800, 200, 0), Wall(1100, 200, 800, 200, 0)]
 hero = Hero(sin, cos, angle)
-entities = floor + enemies + walls
+entities = floor + enemies + students + walls + doors
 mymap = all_map(entities)
 
 flag = {'forward': 0, 'backward': 0, 'left': 0, 'right': 0}
