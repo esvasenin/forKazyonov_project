@@ -141,8 +141,6 @@ class Trace():
                 enemy.index -= 1
 
     def draw(self):
-        pygame.draw.rect(screen, black,
-                         (self.x - mouse_pos['x'] * mouse_impact, self.y - mouse_pos['y'] * mouse_impact, 50, 50))
         return
 
 class Wall():
@@ -388,8 +386,8 @@ def show_menu():
     menu_background = BG
 
     level_1_button = Button(100, 50, 300, 75, menu_button_2, menu_button_1, menu_button_sound)
-    level_2_button = Button(500, 375, 300, 75, menu_button_5, menu_button_6, menu_button_sound)
-    quit_button = Button(900, 700, 210, 67, menu_button_4, menu_button_3, menu_button_sound)
+    level_2_button = Button(350, 300, 300, 75, menu_button_5, menu_button_6, menu_button_sound)
+    quit_button = Button(700, 600, 210, 67, menu_button_4, menu_button_3, menu_button_sound)
 
     while True:
         for event in pygame.event.get():
@@ -400,7 +398,7 @@ def show_menu():
         screen.blit(menu_background, (0, 0))
         level_1_button.draw(level_1)
         level_2_button.draw(level_2)
-        #quit_button.draw(quit)
+        quit_button.draw(quit)
 
         pygame.display.update()
         
@@ -484,16 +482,16 @@ trees = [[Tree(100, 100, 2), Tree(30, 400, 2),
 floor = [[Floor(400, 100, [1500, 900], 1), Floor(400, 200, [600, 500], 0)], 
          [Floor(400, 100, [1700, 1100], 1), Floor(400, 100, [500, 1100], 0),
           Floor(1300, 100, [800, 800], 0)]]
-students = [[Student(450, 250, 30), Student(420, 150, 90)], [Student(600, 800, 0), Student(1500, 400, 90)]]
-enemies = [[Enemy(1850, 430, 0, 0, [-90, 0])], [Enemy(480, 180, 0, 0, [90, 0]), Enemy(1820, 320, 0, 1, [0, -90]),
+students = [[Student(450, 250, 30), Student(420, 150, 90)], [Student(730, 680, 65), Student(1500, 400, 90)]]
+enemies = [[Enemy(1850, 430, 0, 0, [-90, 0])], [Enemy(480, 180, 0, 0, []), Enemy(-1820, -260, -90, 1, [-90, -90]),
                     Enemy(1720, 480, 0, 2, [90, 180])]]
 walls = [[Wall(400, 200, 600, 40, 0), Wall(360, 60, 40, 980, 0), Wall(400, 660, 200, 40, 0), Wall(960, 200, 40, 480, 0),
                    Wall(700, 660, 1100, 40, 0), Wall(400, 60, 1540, 40, 0),
                     Wall(400, 1000, 1500, 40, 0), Wall(1900, 60, 40, 980, 0),
                     Wall(1000, 500, 800, 200, 0), Wall(1100, 200, 800, 200, 0)], [Wall(400, 100, 40, 1100, 0),
-                    Wall(400, 100, 1700, 40, 0), Wall(2100, 100, 40, 1100, 0), Wall(400, 1180, 1615, 40, 0),
-                    Wall(900, 100, 40, 400, 0), Wall(900, 600, 40, 500, 0), Wall(400, 600, 500, 40, 0),
-                    Wall(1100, 200, 40, 1000, 0), Wall(1300, 100, 120, 800, 0), Wall(1300, 820, 600, 120, 0), Wall(1800, 540, 160, 400, 0)]]
+                    Wall(400, 60, 1740, 40, 0), Wall(2100, 100, 40, 1100, 0), Wall(400, 1200, 1755, 40, 0), Wall(1960, 1100, 40, 100, 0),
+                    Wall(900, 100, 40, 400, 0), Wall(900, 600, 40, 500, 0), Wall(400, 600, 300, 120, 0), Wall(700, 600, 200, 40, 0),
+                    Wall(1100, 200, 40, 1000, 0), Wall(1300, 100, 120, 800, 0), Wall(1300, 820, 600, 120, 0), Wall(1800, 340, 160, 600, 0)]]
 mouse = Mouse(hero.x, hero.y)
 entities = [trees[0] + floor[0] + students[0] + walls[0] + doors[0] + enemies[0], trees[1] + floor[1] + students[1] + walls[1] + doors[1] + enemies[1]]
 clock = pygame.time.Clock()
