@@ -11,6 +11,9 @@ from functions import *
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 menu_button_sound = pygame.mixer.Sound(os.path.join("sounds", "button_1.wav"))
+students_count = 0
+
+
 
 class all_map():
     def __init__(self, objects):
@@ -24,7 +27,7 @@ class all_map():
         self.color = black
 
     def render(self):
-        screen.fill((255, 255, 255))
+        screen.fill((92, 193, 81))
         for object in self.objects:
             object.draw()
 
@@ -88,6 +91,21 @@ class all_map():
             else:
                 pass
 
+class Mouse:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.size = mouse_size
+        self.img = MOUSE
+        
+    def draw(self):
+        if hero.damage_time > 0:
+            self.img = EYE
+            screen.blit(self.img, (self.x - eye_width / 2, self.y - eye_height / 5))
+        else:
+            self.img = MOUSE
+            screen.blit(self.img, (self.x - self.size / 2, self.y - self.size / 2))
+
 class Trace():
     def __init__(self, x, y, angle):
         self.angle = angle
@@ -101,7 +119,7 @@ class Trace():
         self.vy = 40 * math.cos(angle / 180 * math.pi) / FPS * 60
         self.time = 0
         self.killed = 0
-        self.radius = 40
+        self.radius = 60
 
     def move(self):
         self.x += self.vx
@@ -209,6 +227,69 @@ class Enemy():
                 self.rotate_index = 0
                 self.rotate_time = 7 * FPS
 
+class Student():
+    def __init__(self, x, y, angle):
+        self.width = 0
+        self.height = 0
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.img_0 = pygame.image.load(os.path.join("sprites", "PNG", "Player", "Poses", "student.png"))
+        self.img = pygame.transform.rotate(self.img_0, self.angle)
+        self.killed = False
+        self.count = 0
+        
+    def draw(self):
+        if not self.killed:
+            screen.blit(self.img, (self.x - mouse_pos['x'] * mouse_impact - hero.length / 2,
+                               self.y - mouse_pos['y'] * mouse_impact - hero.height / 2))
+        
+    def eat(self):
+        global students_count
+        if not self.killed:
+            self.killed = True
+            students_count += 1
+            if students_count == len(students[level]):
+                for door in doors[level]:
+                    door.door_open()
+
+class Button:
+    def __init__(self, x, y, width, height, active_img, inactive_img, sound):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.inactive_img = inactive_img
+        self.active_img = active_img
+        self.sound = sound
+
+    def draw(self, func=None) -> object:
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+
+        if self.x < mouse[0] < self.x + self.width and self.y < mouse[1] < self.y + self.height:
+            screen.blit(self.active_img, (self.x, self.y))
+
+            if click[0] == 1:
+                pygame.mixer.Sound.play(self.sound)
+                pygame.time.delay(400)
+                if func is not None:
+                    func()
+
+        else:
+            screen.blit(self.inactive_img, (self.x, self.y))
+
+class Tree():
+    def __init__(self, x, y, index):
+        self.x = x
+        self.y = y
+        self.width = 0
+        self.height = 0
+        self.img = FLOOR[index]
+        
+    def draw(self):
+        screen.blit(self.img, (self.x - mouse_pos['x'] * mouse_impact ,self.y - mouse_pos['y'] * mouse_impact))
+    
 class Floor():
     def __init__(self, x, y, size, number):
         self.x = x
@@ -216,9 +297,7 @@ class Floor():
         self.width = 0
         self.height = 0
         self.size = size
-        self.sprite = black
         self.img = FLOOR[number]
-        
         
     def draw(self):
         for i in range(self.size[1] // floor_sprite_size):
@@ -241,13 +320,77 @@ def eat():
 def level_1_win():
     global level
     level = 1
+    students_count = 0
     level_2()
+    
+def level_2_win():
+    global level
+    level = 0
+    students_count = 0
+    win()
 
+def win():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        screen.blit(outro_img, (0, 0))
+
+        str1 = 'Останусь я бодрым или сон сразит меня - надеюсь, что первокуры'
+        str2 = 'посетят пару и доделают все свои проекты.'
+        str3 = 'Я прожил этот день свободным от компромиссов и принимаю зас-'
+        str4 = 'луженный отдых без жалоб и сожалений.'
+        str5 = 'Вы помогли Ивану найти путь к выходу, спасибо.'
+        str6 = 'Нажмите ENTER, чтобы продолжить'
+
+        output(str1, 10, 10, (29, 124, 219))
+        output(str2, 10, 50, (29, 124, 219))
+        output(str3, 10, 90, (29, 124, 219))
+        output(str4, 10, 130, (29, 124, 219))
+        output(str5, 200, 600, (0, 255, 0))
+        output(str6, 350, 700, (0, 0, 0))
+
+
+        pause_keys = pygame.key.get_pressed()
+        if pause_keys[pygame.K_RETURN]:
+            show_menu()
+
+        pygame.display.update()
+        
+def pause():
+    pygame.mouse.set_visible(1)
+    paused = True
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        screen.blit(p_menu, (0, 0))
+
+        output('ВЫ ПРИОСТАНОВИЛИ ИГРУ', 130, 30, (0, 209, 224))
+        output('Чтобы продолжить жмякните ENTER', 400, 425, (255, 0, 0))
+
+        menu_butt = Button(1100, 850, 190, 35, esc_menu_button_1, esc_menu_button_2, menu_button_sound)
+
+        menu_butt.draw(show_menu)
+
+        pause_keys = pygame.key.get_pressed()
+        if pause_keys[pygame.K_RETURN]:
+            paused = False
+            pygame.mouse.set_visible(0)
+        pygame.display.update()
+        
 def show_menu():
+    pygame.mouse.set_visible(1)
     menu_background = BG
+
     level_1_button = Button(100, 50, 300, 75, menu_button_2, menu_button_1, menu_button_sound)
-    level_2_button = Button(400, 50, 300, 75, menu_button_2, menu_button_1, menu_button_sound)
+    level_2_button = Button(500, 375, 300, 75, menu_button_5, menu_button_6, menu_button_sound)
     quit_button = Button(900, 700, 210, 67, menu_button_4, menu_button_3, menu_button_sound)
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -258,21 +401,64 @@ def show_menu():
         level_1_button.draw(level_1)
         level_2_button.draw(level_2)
         #quit_button.draw(quit)
+
         pygame.display.update()
 
+trees = [[Tree(100, 100, 2), Tree(30, 400, 2), Tree(40, 600, 3), Tree(-140, 1000, 3),
+          Tree(340, 1200, 3), Tree(170, 880, 2), Tree(90, 1180, 2)], []]
 floor = [[Floor(400, 100, [1500, 900], 1), Floor(400, 200, [600, 500], 0)], 
          []]
+students = [[Student(450, 250, 30), Student(420, 150, 90)], []]
 enemies = [[Enemy(1850, 430, 0, 0, [-90, 0])], []]
 walls = [[Wall(400, 200, 600, 40, 0), Wall(360, 60, 40, 980, 0), Wall(400, 660, 200, 40, 0), Wall(960, 200, 40, 480, 0),
                    Wall(700, 660, 1100, 40, 0), Wall(400, 60, 1540, 40, 0),
                     Wall(400, 1000, 1500, 40, 0), Wall(1900, 60, 40, 980, 0),
                     Wall(1000, 500, 800, 200, 0), Wall(1100, 200, 800, 200, 0)], [Wall(1000, 500, 800, 200, 0)]]
-
-entities = [floor[0] + students[0] + walls[0] + doors[0] + enemies[0], floor[1] + students[1] + walls[1] + doors[1] + enemies[1]]
+mouse = Mouse(hero.x, hero.y)
+entities = [trees[0] + floor[0] + students[0] + walls[0] + doors[0] + enemies[0], trees[1] + floor[1] + students[1] + walls[1] + doors[1] + enemies[1]]
 clock = pygame.time.Clock()
+
+def intro():
+    pygame.mouse.set_visible(1)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        screen.blit(intro_img, (0, 0))
+
+        str1 = 'Этот ФОПФ боится меня. Я видел его истинное лицо, коридоры - '
+        str2 = 'продолжение сточных канав, а канавы заполнены жареными кры-'
+        str3 = 'сами. И когда все дедлайны будут окончательно слиты,'
+        str4 = 'то весь этот плебс начнёт тонуть... Когда скопившиеся долги'
+        str5 = 'вспенятся им до пояса, все первокуры посмотрят вверх '
+        str6 = 'и возопят:'
+        str7 = '"СПАСИ НАС, ИВАН!"'
+        str8 = 'А я прошепчу:'
+        str9 = 'КАК ЖЕ ХОЧЕТСЯ ПОСПАТЬ...'
+        str10 = 'Нажмите ENTER, чтобы продолжить'
+
+        output(str1, 10, 10, (0, 175, 0))
+        output(str2, 10, 50, (0, 175, 0))
+        output(str3, 10, 90, (0, 175, 0))
+        output(str4, 10, 130, (0, 175, 0))
+        output(str5, 10, 170, (0, 175, 0))
+        output(str6, 10, 210, (0, 175, 0))
+        output(str7, 10, 250, (0, 175, 0))
+        output(str8, 10, 290, (0, 175, 0))
+        output(str9, 600, 600, (255, 175, 0))
+        output(str10, 350, 700, (0, 0, 0))
+
+        pause_keys = pygame.key.get_pressed()
+        if pause_keys[pygame.K_RETURN]:
+            show_menu()
+
+        pygame.display.update()
 
 def level_1():
     global sin, cos, angle, stan_cooldown, axis, students_count, level
+    pygame.mouse.set_visible(0)
     level = 0
     mymap = all_map(entities[level])
     scripts = {'forward': mymap.forward, 'backward': mymap.backward, 'left': mymap.left, 'right': mymap.right}
@@ -319,6 +505,8 @@ def level_1():
 
             if event.type == pygame.MOUSEMOTION:
                 mouse_pos['x'], mouse_pos['y'] = event.pos[0] - screen_width / 2, event.pos[1] - screen_height / 2
+                mouse.x = event.pos[0]
+                mouse.y = event.pos[1]
 
             if event.type == pygame.KEYUP:
                 for key in buttons:
@@ -367,6 +555,7 @@ def level_1():
         font = pygame.font.Font('game_font.ttf', 25)
         name_text = font.render('СТУДЕНТОВ СЪЕДЕНО: ' + str(students_count) + " ИЗ " + str(len(students)), 1, (0, 0, 0))
         screen.blit(name_text, (35, 35))
+        mouse.draw()
         pygame.display.update()
         hero.img_0 = pygame.image.load(os.path.join("sprites", "PNG", "Player", "Poses", hero_sprite[0]))
         if hero.damage_time >= 0:
@@ -375,6 +564,7 @@ def level_1():
 
 def level_2():
     global sin, cos, angle, stan_cooldown, axis, students_count, level
+    pygame.mouse.set_visible(0)
     level = 1
     mymap = all_map(entities[level])
     scripts = {'forward': mymap.forward, 'backward': mymap.backward, 'left': mymap.left, 'right': mymap.right}
@@ -421,6 +611,8 @@ def level_2():
 
             if event.type == pygame.MOUSEMOTION:
                 mouse_pos['x'], mouse_pos['y'] = event.pos[0] - screen_width / 2, event.pos[1] - screen_height / 2
+                mouse.x = event.pos[0]
+                mouse.y = event.pos[1]
 
             if event.type == pygame.KEYUP:
                 for key in buttons:
@@ -469,10 +661,12 @@ def level_2():
         font = pygame.font.Font('game_font.ttf', 25)
         name_text = font.render('СТУДЕНТОВ СЪЕДЕНО: ' + str(students_count) + " ИЗ " + str(len(students)), 1, (0, 0, 0))
         screen.blit(name_text, (35, 35))
+        mouse.draw()
         pygame.display.update()
         hero.img_0 = pygame.image.load(os.path.join("sprites", "PNG", "Player", "Poses", hero_sprite[0]))
         if hero.damage_time >= 0:
             hero.damage_time -= 1
+        
 
 
 
@@ -481,6 +675,6 @@ flag = {'forward': 0, 'backward': 0, 'left': 0, 'right': 0}
 buttons = {'forward': pygame.K_s, 'backward': pygame.K_w, 'left': pygame.K_d, 'right': pygame.K_a}
 axis = {'Ox': 0, 'Oy': 0}
 
-show_menu()
+intro()
 
 pygame.display.update()
