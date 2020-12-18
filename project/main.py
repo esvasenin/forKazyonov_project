@@ -9,7 +9,7 @@ from classes import *
 from functions import *
 
 pygame.init()
-screen = pygame.display.set_mode((screen_width, screen_height))
+screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 menu_button_sound = pygame.mixer.Sound(os.path.join("sounds", "button_1.wav"))
 students_count = 0
 
@@ -400,20 +400,37 @@ def show_menu():
         screen.blit(menu_background, (0, 0))
         level_1_button.draw(level_1)
         level_2_button.draw(level_2)
-        #quit_button.draw(quit)
+        quit_button.draw(quit)
 
         pygame.display.update()
 
-trees = [[Tree(100, 100, 2), Tree(30, 400, 2), Tree(40, 600, 3), Tree(-140, 1000, 3),
-          Tree(340, 1200, 3), Tree(170, 880, 2), Tree(90, 1180, 2)], []]
+trees = [[Tree(100, 100, 2), Tree(30, 400, 2),
+        Tree(40, 600, 3), Tree(-140, 1000, 3), Tree(340, 1200, 3), Tree(170, 880, 2), Tree(90, 1180, 2),
+        Tree(150, -210, 3), Tree(450, -190, 2), Tree(570, -150, 3), Tree(900, -150, 3), Tree(1300, -110, 2), Tree(1600, -150, 3),
+        Tree(1900, -40, 2), Tree(2100, -100, 2), Tree(2300, -60, 3), Tree(2400, -70, 3),
+        Tree(2100, 0, 2), Tree(2200, 140, 2), Tree(2150, 500, 3), Tree(2250, 700, 2), Tree(2150, 800, 2),
+        Tree(2150, 900, 2), Tree(2050, 1100, 2), Tree(2250, 1300, 3), Tree(2100, 1400, 3),
+        Tree(150, 1100, 3), Tree(450, 1200, 2), Tree(570, 1100, 3), Tree(900, 1350, 3), Tree(900, 1250, 2), Tree(1200, 1150, 3)],
+        [Tree(100, 100, 2), Tree(30, 400, 2),
+        Tree(40, 600, 3), Tree(-140, 1000, 3), Tree(340, 1200, 3), Tree(170, 880, 2), Tree(90, 1180, 2),
+        Tree(150, -70, 3), Tree(450, -50, 2), Tree(570, -60, 3), Tree(900, -70, 3), Tree(1300, -50, 2), Tree(1600, -60, 3),
+        Tree(1900, -40, 2), Tree(2100, -100, 2), Tree(2300, -60, 3), Tree(2400, -70, 3),
+        Tree(2600, 0, 2), Tree(2500, 140, 2), Tree(2400, 500, 3), Tree(2550, 700, 2), Tree(2600, 800, 2),
+        Tree(2600, 900, 2), Tree(2500, 1100, 2), Tree(2400, 1300, 3), Tree(2550, 1400, 3),
+        Tree(150, 1450, 3), Tree(450, 1500, 2), Tree(570, 1600, 3), Tree(900, 1500, 3), Tree(1300, 1650, 2), Tree(1600, 1450, 3)]]
 floor = [[Floor(400, 100, [1500, 900], 1), Floor(400, 200, [600, 500], 0)], 
-         []]
-students = [[Student(450, 250, 30), Student(420, 150, 90)], []]
-enemies = [[Enemy(1850, 430, 0, 0, [-90, 0])], []]
+         [Floor(400, 100, [1700, 1100], 1), Floor(400, 100, [500, 1100], 0),
+          Floor(1300, 100, [800, 800], 0)]]
+students = [[Student(450, 250, 30), Student(420, 150, 90)], [Student(600, 800, 0), Student(1500, 400, 90)]]
+enemies = [[Enemy(1850, 430, 0, 0, [-90, 0])], [Enemy(500, 200, 0, 0, [180, -90, 0]), Enemy(1800, 300, 0, 1, [0, -90]),
+                    Enemy(1700, 800, 0, 2, [90, 180])]]
 walls = [[Wall(400, 200, 600, 40, 0), Wall(360, 60, 40, 980, 0), Wall(400, 660, 200, 40, 0), Wall(960, 200, 40, 480, 0),
                    Wall(700, 660, 1100, 40, 0), Wall(400, 60, 1540, 40, 0),
                     Wall(400, 1000, 1500, 40, 0), Wall(1900, 60, 40, 980, 0),
-                    Wall(1000, 500, 800, 200, 0), Wall(1100, 200, 800, 200, 0)], [Wall(1000, 500, 800, 200, 0)]]
+                    Wall(1000, 500, 800, 200, 0), Wall(1100, 200, 800, 200, 0)], [Wall(400, 100, 40, 1100, 0),
+                    Wall(400, 100, 1700, 40, 0), Wall(2100, 100, 40, 1100, 0), Wall(400, 1180, 1615, 40, 0),
+                    Wall(900, 100, 40, 400, 0), Wall(900, 600, 40, 500, 0), Wall(400, 600, 500, 40, 0),
+                    Wall(1100, 200, 40, 1000, 0), Wall(1300, 100, 40, 1000, 0), Wall(1300, 900, 600, 40, 0)]]
 mouse = Mouse(hero.x, hero.y)
 entities = [trees[0] + floor[0] + students[0] + walls[0] + doors[0] + enemies[0], trees[1] + floor[1] + students[1] + walls[1] + doors[1] + enemies[1]]
 clock = pygame.time.Clock()
