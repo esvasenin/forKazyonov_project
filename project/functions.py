@@ -11,12 +11,11 @@ pygame.mixer.init()
 menu_button_sound = pygame.mixer.Sound(os.path.join("sounds", "button_1.wav"))
 screen = pygame.display.set_mode((screen_width, screen_height))
 
-def output(text, x, y, font_color, font_type='game_font.ttf', font_size=40):
+def output(text, x, y, font_color, font_type='game_font.ttf', font_size=27):
     font_type = pygame.font.Font(font_type, font_size)
     message1 = font_type.render(text, True, font_color)
     message2 = font_type.render(text, True, (0,0,0))
-    screen.blit(message2, (x+2, y+2))
+    screen.blit(message2, (x+1, y+1))
     screen.blit(message1, (x, y))
         
-def lose():
-    return
+

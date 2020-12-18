@@ -9,6 +9,7 @@ from functions import *
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 
+
 class Door():
     def __init__(self, x, y, width, height, angle):
         self.angle = angle
@@ -87,8 +88,6 @@ class Hero():
         if self.damage_time <= 0:
             self.hp -= 1
             self.damage_time = 2 * FPS
-            if self.hp <= 0:
-                lose()
 
 class Star():
     def __init__(self, x, y, angle):

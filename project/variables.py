@@ -6,8 +6,8 @@ import math
 
 FPS = 60
 
-screen_width = 1400
-screen_height = 900
+screen_width = 1000
+screen_height = 700
 level_size = [1500, 1500]
 black = (0, 0, 0)
 white = (255, 255, 255)
